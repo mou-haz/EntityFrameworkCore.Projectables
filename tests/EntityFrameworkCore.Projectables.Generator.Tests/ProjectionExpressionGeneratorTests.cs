@@ -1785,7 +1785,7 @@ class Foo {
         }
 
         [Fact]
-        public Task SwitchExpression()
+        public Task SwitchExpressionWithConstantPattern()
         {
             var compilation = CreateCompilation(@"
 using EntityFrameworkCore.Projectables;
@@ -1811,6 +1811,52 @@ class Foo {
             return Verifier.Verify(result.GeneratedTrees[0].ToString());
         }
 
+        [Fact]
+        public Task SwitchExpressionWithTypePattern()
+        {
+            var compilation = CreateCompilation(@"
+using EntityFrameworkCore.Projectables;
+
+public abstract class Item
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+public class GroupItem : Item
+{
+    public string Description { get; set; }
+}
+
+public class DocumentItem : Item
+{
+    public int Priority { get; set; }
+}
+
+public abstract record ItemData(int Id, string Name);
+public record GroupData(int Id, string Name, string Description) : ItemData(Id, Name);
+public record DocumentData(int Id, string Name, int Priority) : ItemData(Id, Name);
+
+public static class ItemMapper
+{
+    [Projectable]
+    public static ItemData ToData(this Item item) =>
+        item switch
+        {
+            GroupItem groupItem => new GroupData(groupItem.Id, groupItem.Name, groupItem.Description),
+            DocumentItem documentItem => new DocumentData(documentItem.Id, documentItem.Name, documentItem.Priority),
+            _ => null!
+        };
+}
+");
+
+            var result = RunGenerator(compilation);
+
+            Assert.Empty(result.Diagnostics);
+            
+            return Verifier.Verify(result.GeneratedTrees[0].ToString());
+        }
+        
         [Fact]
         public Task GenericTypes()
         {

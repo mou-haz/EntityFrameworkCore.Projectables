@@ -190,7 +190,46 @@ namespace EntityFrameworkCore.Projectables.Generator
                     continue;
                 }
 
-                throw new InvalidOperationException("Switch expressions rewriting is only supported with constant values");
+                if (arm.Pattern is DeclarationPatternSyntax declaration)
+                {
+                    var getTypeExpression = SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        (ExpressionSyntax)Visit(node.GoverningExpression),
+                        SyntaxFactory.IdentifierName("GetType")
+                    );
+
+                    var getTypeCall = SyntaxFactory.InvocationExpression(getTypeExpression);
+                    var typeofExpression = SyntaxFactory.TypeOfExpression(declaration.Type);
+                    var equalsExpression = SyntaxFactory.BinaryExpression(
+                        SyntaxKind.EqualsExpression,
+                        getTypeCall,
+                        typeofExpression
+                    );
+
+                    ExpressionSyntax condition = equalsExpression;
+                    if (arm.WhenClause != null)
+                    {
+                        condition = SyntaxFactory.BinaryExpression(
+                            SyntaxKind.LogicalAndExpression, 
+                            equalsExpression,
+                            (ExpressionSyntax)Visit(arm.WhenClause.Condition)
+                        );
+                    }
+
+                    var modifiedArmExpression = ReplaceVariableWithCast(armExpression, declaration, node.GoverningExpression);
+                    currentExpression = SyntaxFactory.ConditionalExpression(
+                        condition,
+                        modifiedArmExpression,
+                        currentExpression
+                    );
+
+                    continue;
+                }
+
+                throw new InvalidOperationException(
+                    $"Switch expressions rewriting supports only constant values and declaration patterns (Type var). " +
+                    $"Unsupported pattern: {arm.Pattern.GetType().Name}"
+                );
             }
             
             return currentExpression;
@@ -345,6 +384,26 @@ namespace EntityFrameworkCore.Projectables.Generator
             }
 
             return base.VisitNullableType(node);
+        }
+        
+        private ExpressionSyntax ReplaceVariableWithCast(ExpressionSyntax expression, DeclarationPatternSyntax declaration, ExpressionSyntax governingExpression)
+        {
+            if (declaration.Designation is SingleVariableDesignationSyntax variableDesignation)
+            {
+                var variableName = variableDesignation.Identifier.ValueText;
+        
+                var castExpression = SyntaxFactory.ParenthesizedExpression(
+                    SyntaxFactory.CastExpression(
+                        declaration.Type,
+                        (ExpressionSyntax)Visit(governingExpression)
+                    )
+                );
+
+                var rewriter = new VariableReplacementRewriter(variableName, castExpression);
+                return (ExpressionSyntax)rewriter.Visit(expression);
+            }
+
+            return expression;
         }
     }
 }
