@@ -16,11 +16,11 @@
     <PackageVersion Include="Basic.Reference.Assemblies.Net80" Version="1.7.9" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="EntityFrameworkCore.Projectables.Abstractions" Version="4.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <PackageVersion Include="ScenarioTests.XUnit" Version="1.0.1" />
     <PackageVersion Include="Verify.Xunit" Version="22.5.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
