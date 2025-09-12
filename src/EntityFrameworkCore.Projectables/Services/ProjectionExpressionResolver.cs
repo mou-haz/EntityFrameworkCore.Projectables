@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 using EntityFrameworkCore.Projectables.Extensions;
 
@@ -10,8 +8,9 @@ namespace EntityFrameworkCore.Projectables.Services
     {
         public LambdaExpression FindGeneratedExpression(MemberInfo projectableMemberInfo)
         {
-            var projectableAttribute = projectableMemberInfo.GetCustomAttribute<ProjectableAttribute>()
-                ?? throw new InvalidOperationException("Expected member to have a Projectable attribute. None found");
+            var projectableAttribute = projectableMemberInfo.GetCustomAttribute<ProjectableAttribute>() ??
+                                       throw new InvalidOperationException(
+                                           "Expected member to have a Projectable attribute. None found");
 
             var expression = GetExpressionFromGeneratedType(projectableMemberInfo);
 
@@ -22,7 +21,8 @@ namespace EntityFrameworkCore.Projectables.Services
 
             if (expression is null)
             {
-                var declaringType = projectableMemberInfo.DeclaringType ?? throw new InvalidOperationException("Expected a valid type here");
+                var declaringType = projectableMemberInfo.DeclaringType ??
+                                    throw new InvalidOperationException("Expected a valid type here");
                 var fullName = string.Join(".", Enumerable.Empty<string>()
                     .Concat(new[] { declaringType.Namespace })
                     .Concat(declaringType.GetNestedTypePath().Select(x => x.Name))
@@ -35,8 +35,10 @@ namespace EntityFrameworkCore.Projectables.Services
 
             static LambdaExpression? GetExpressionFromMemberBody(MemberInfo projectableMemberInfo, string memberName)
             {
-                var declaringType = projectableMemberInfo.DeclaringType ?? throw new InvalidOperationException("Expected a valid type here");
-                var exprProperty = declaringType.GetProperty(memberName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var declaringType = projectableMemberInfo.DeclaringType ??
+                                    throw new InvalidOperationException("Expected a valid type here");
+                var exprProperty = declaringType.GetProperty(memberName,
+                    BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 var lambda = exprProperty?.GetValue(null) as LambdaExpression;
 
                 if (lambda is not null)
@@ -47,10 +49,8 @@ namespace EntityFrameworkCore.Projectables.Services
                     {
                         return lambda;
                     }
-                    else if (projectableMemberInfo is MethodInfo method &&
-                        lambda.Parameters.Count == method.GetParameters().Length + 1 &&
-                        lambda.Parameters.Last().Type == declaringType &&
-                        !lambda.Parameters.Zip(method.GetParameters(), (a, b) => a.Type != b.ParameterType).Any())
+
+                    if (projectableMemberInfo is MethodInfo method && CheckIsSameSignature(lambda, method))
                     {
                         return lambda;
                     }
@@ -61,8 +61,11 @@ namespace EntityFrameworkCore.Projectables.Services
 
             static LambdaExpression? GetExpressionFromGeneratedType(MemberInfo projectableMemberInfo)
             {
-                var declaringType = projectableMemberInfo.DeclaringType ?? throw new InvalidOperationException("Expected a valid type here");
-                var generatedContainingTypeName = ProjectionExpressionClassNameGenerator.GenerateFullName(declaringType.Namespace, declaringType.GetNestedTypePath().Select(x => x.Name), projectableMemberInfo.Name);
+                var declaringType = projectableMemberInfo.DeclaringType ??
+                                    throw new InvalidOperationException("Expected a valid type here");
+                var generatedContainingTypeName = ProjectionExpressionClassNameGenerator.GenerateFullName(
+                    declaringType.Namespace, declaringType.GetNestedTypePath().Select(x => x.Name),
+                    projectableMemberInfo.Name);
 
                 var expressionFactoryType = declaringType.Assembly.GetType(generatedContainingTypeName);
 
@@ -70,12 +73,15 @@ namespace EntityFrameworkCore.Projectables.Services
                 {
                     if (expressionFactoryType.IsGenericTypeDefinition)
                     {
-                        expressionFactoryType = expressionFactoryType.MakeGenericType(declaringType.GenericTypeArguments);
+                        expressionFactoryType =
+                            expressionFactoryType.MakeGenericType(declaringType.GenericTypeArguments);
                     }
 
-                    var expressionFactoryMethod = expressionFactoryType.GetMethod("Expression", BindingFlags.Static | BindingFlags.NonPublic);
+                    var expressionFactoryMethod =
+                        expressionFactoryType.GetMethod("Expression", BindingFlags.Static | BindingFlags.NonPublic);
 
-                    var methodGenericArguments = projectableMemberInfo switch {
+                    var methodGenericArguments = projectableMemberInfo switch
+                    {
                         MethodInfo methodInfo => methodInfo.GetGenericArguments(),
                         _ => null
                     };
@@ -87,12 +93,34 @@ namespace EntityFrameworkCore.Projectables.Services
                             expressionFactoryMethod = expressionFactoryMethod.MakeGenericMethod(methodGenericArguments);
                         }
 
-                        return expressionFactoryMethod.Invoke(null, null) as LambdaExpression ?? throw new InvalidOperationException("Expected lambda");
+                        return expressionFactoryMethod.Invoke(null, null) as LambdaExpression ??
+                               throw new InvalidOperationException("Expected lambda");
                     }
                 }
 
                 return null;
             }
+        }
+
+        private static bool CheckIsSameSignature(LambdaExpression lambda, MethodInfo method)
+        {
+            if (lambda.ReturnType != method.ReturnType)
+            {
+                return false;
+            }
+
+            var methodParamTypes = method.GetParameters().Select(param => param.ParameterType);
+            if (!method.IsStatic)
+            {
+                methodParamTypes =
+                [
+                    method.DeclaringType!,
+                    ..methodParamTypes
+                ];
+            }
+
+            return !lambda.Parameters
+                .Zip(methodParamTypes, (a, b) => a.Type != b).Any(val => val);
         }
     }
 }

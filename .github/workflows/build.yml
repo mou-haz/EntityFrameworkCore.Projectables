@@ -39,22 +39,24 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
 
-  prerelease:
-    needs: build
-    if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 9.0.x
-      - name: Pack
-        run: | 
-          dotnet pack -v normal -c Debug --include-symbols --include-source -p:PackageVersion=4.0.0-pre-$GITHUB_RUN_ID -o nupkg 
-      - name: Push to GitHub Feed
-        run: |
-          for f in ./nupkg/*.nupkg
-          do
-            dotnet nuget push $f --source $GITHUB_FEED --api-key ${{github.token}} --skip-duplicate --no-symbols
-          done
+  #prerelease:
+  #  needs: build
+  #  if: github.ref == 'refs/heads/master'
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - name: Setup .NET
+  #      uses: actions/setup-dotnet@v1
+  #      with:
+  #        dotnet-version: 9.0.x
+      
+      #- name: Pack
+      #  run: | 
+      #    dotnet pack -v normal -c Debug --include-symbols --include-source -p:PackageVersion=4.0.0-pre-$GITHUB_RUN_ID -o nupkg 
+      
+      #- name: Push to GitHub Feed
+      #  run: |
+      #    for f in ./nupkg/*.nupkg
+      #    do
+      #      dotnet nuget push $f --source $GITHUB_FEED --api-key ${{github.token}} --skip-duplicate --no-symbols
+      #    done

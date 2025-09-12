@@ -1,3 +1,0 @@
-﻿SELECT [e].[Id]
-FROM [Entity] AS [e]
-WHERE [e].[Id] = 1

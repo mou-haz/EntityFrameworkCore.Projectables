@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using EntityFrameworkCore.Projectables.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -14,7 +15,7 @@ namespace EntityFrameworkCore.Projectables.Services
     {
         private readonly IProjectionExpressionResolver _resolver;
         private readonly ExpressionArgumentReplacer _expressionArgumentReplacer = new();
-        private readonly Dictionary<MemberInfo, LambdaExpression?> _projectableMemberCache = new();
+        private static readonly Dictionary<MemberInfo, LambdaExpression?> ProjectableMemberCache = new();
         private IQueryProvider? _currentQueryProvider;
         private bool _disableRootRewrite = false;
         private readonly bool _trackingByDefault;
@@ -43,9 +44,14 @@ namespace EntityFrameworkCore.Projectables.Services
                 );
         }
 
+        public static void Register(MemberInfo memberInfo, LambdaExpression expression)
+        {
+            ProjectableMemberCache[memberInfo] = expression;
+        }
+
         bool TryGetReflectedExpression(MemberInfo memberInfo, [NotNullWhen(true)] out LambdaExpression? reflectedExpression)
         {
-            if (!_projectableMemberCache.TryGetValue(memberInfo, out reflectedExpression))
+            if (!ProjectableMemberCache.TryGetValue(memberInfo, out reflectedExpression))
             {
                 var projectableAttribute = memberInfo.GetCustomAttribute<ProjectableAttribute>(false);
 
@@ -53,7 +59,7 @@ namespace EntityFrameworkCore.Projectables.Services
                     ? _resolver.FindGeneratedExpression(memberInfo)
                     : null;
 
-                _projectableMemberCache.Add(memberInfo, reflectedExpression);
+                ProjectableMemberCache.Add(memberInfo, reflectedExpression);
             }
 
             return reflectedExpression is not null;
