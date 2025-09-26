@@ -10,9 +10,7 @@ namespace EntityFrameworkCore.Projectables.Services
     {
         public LambdaExpression FindGeneratedExpression(MemberInfo projectableMemberInfo)
         {
-            var projectableAttribute = projectableMemberInfo.GetCustomAttribute<ProjectableAttribute>()
-                                       ?? throw new InvalidOperationException(
-                                           "Expected member to have a Projectable attribute. None found");
+            var projectableAttribute = projectableMemberInfo.GetCustomAttribute<ProjectableAttribute>() ?? throw new InvalidOperationException("Expected member to have a Projectable attribute. None found");
 
             var expression = GetExpressionFromGeneratedType(projectableMemberInfo);
 
