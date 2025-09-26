@@ -26,5 +26,5 @@ jobs:
         uses: mou-haz/GitHub-WorkFlows/.github/steps/package_publish@main
         with:
           token: ${{ secrets.GithubPackages_Key }}
-          repo_name: SimpleShimmer
+          repo_name: EntityFrameworkCore.Projectables
           github_packages_token: ${{ secrets.GithubPackages_Key }}
