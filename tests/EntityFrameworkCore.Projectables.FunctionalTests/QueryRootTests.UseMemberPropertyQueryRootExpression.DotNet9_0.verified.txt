@@ -1,2 +1,0 @@
-﻿SELECT [e].[Id], [e].[Id] * 5
-FROM [Entity] AS [e]

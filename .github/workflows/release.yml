@@ -33,4 +33,5 @@ jobs:
         with:
           token: ${{ secrets.GithubPackages_Key }}
           repo_name: "EntityFrameworkCore.Projectables"
+          pkg_name: "Inf.EntityFramework.Projectables"
           github_packages_token: ${{ secrets.GithubPackages_Key }}
