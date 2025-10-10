@@ -21,10 +21,16 @@ jobs:
         with:
           dotnet-version: 9.0.x
           include-prerelease: True
-
+      
+      
+      - name: Clone Actions Repo
+        shell: bash
+        run: |
+          git clone https://${{ secrets.GithubPackages_Key }}@github.com/mou-haz/GitHub-WorkFlows
+      
       - name: Publish Chores
-        uses: mou-haz/GitHub-WorkFlows/.github/steps/package_publish@main
+        uses: "./GitHub-WorkFlows/.github/steps/package_publish"
         with:
           token: ${{ secrets.GithubPackages_Key }}
-          repo_name: EntityFrameworkCore.Projectables
+          repo_name: "EntityFrameworkCore.Projectables"
           github_packages_token: ${{ secrets.GithubPackages_Key }}
