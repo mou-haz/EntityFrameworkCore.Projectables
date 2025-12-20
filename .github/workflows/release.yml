@@ -15,20 +15,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 9.0.x
-          include-prerelease: True
-      
-      - name: Clone Actions Repo
-        shell: bash
-        run: |
-          git clone https://${{ secrets.GithubPackages_Key }}@github.com/mou-haz/GitHub-WorkFlows
-      
       - name: Publish Chores
-        uses: "./GitHub-WorkFlows/.github/steps/package_publish"
+        uses: mou-haz/GitHub-WorkFlows/.github/steps/package_publish@main
         with:
           token: ${{ secrets.GithubPackages_Key }}
           packages: ":I.EntityFramework.Projectables"
