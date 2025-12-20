@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-	<PackageId>Inf.EntityFramework.Projectables</PackageId>
+	<PackageId>I.EntityFramework.Projectables</PackageId>
 	<PackageProjectUrl>https://github.com/mou-haz/EntityFrameworkCore.Projectables/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mou-haz/EntityFrameworkCore.Projectables/.git</RepositoryUrl>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
