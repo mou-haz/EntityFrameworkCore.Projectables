@@ -31,5 +31,5 @@ jobs:
         uses: "./GitHub-WorkFlows/.github/steps/package_publish"
         with:
           token: ${{ secrets.GithubPackages_Key }}
-          packages: "EntityFrameworkCore.Projectables:I.EntityFramework.Projectables"
+          packages: ":I.EntityFramework.Projectables"
           github_packages_token: ${{ secrets.GithubPackages_Key }}
