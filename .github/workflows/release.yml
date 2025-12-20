@@ -22,7 +22,6 @@ jobs:
           dotnet-version: 9.0.x
           include-prerelease: True
       
-      
       - name: Clone Actions Repo
         shell: bash
         run: |
@@ -32,6 +31,5 @@ jobs:
         uses: "./GitHub-WorkFlows/.github/steps/package_publish"
         with:
           token: ${{ secrets.GithubPackages_Key }}
-          repo_name: "EntityFrameworkCore.Projectables"
-          pkg_name: "Inf.EntityFramework.Projectables"
+          packages: "EntityFrameworkCore.Projectables:I.EntityFramework.Projectables"
           github_packages_token: ${{ secrets.GithubPackages_Key }}
