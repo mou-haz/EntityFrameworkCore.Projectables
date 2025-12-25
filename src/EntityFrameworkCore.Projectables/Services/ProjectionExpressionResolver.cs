@@ -1,31 +1,13 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using EntityFrameworkCore.Projectables.Extensions;
 
 namespace EntityFrameworkCore.Projectables.Services
 {
     public sealed class ProjectionExpressionResolver : IProjectionExpressionResolver
     {
-        private static readonly Dictionary<MemberInfo, LambdaExpression> Cache = new();
-
-        public static void Register(MemberInfo memberInfo, LambdaExpression expression)
-        {
-            Cache[memberInfo] = expression;
-        }
-
         public LambdaExpression FindGeneratedExpression(MemberInfo projectableMemberInfo)
         {
-            ref var cachedExpression = ref CollectionsMarshal.GetValueRefOrNullRef(Cache, projectableMemberInfo);
-            if (!Unsafe.IsNullRef(ref cachedExpression))
-            {
-                return cachedExpression;
-            }
-            
             var projectableAttribute = projectableMemberInfo.GetCustomAttribute<ProjectableAttribute>() ??
                                        throw new InvalidOperationException(
                                            "Expected member to have a Projectable attribute. None found");
