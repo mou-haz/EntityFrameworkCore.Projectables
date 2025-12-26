@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -15,7 +16,7 @@ namespace EntityFrameworkCore.Projectables.Services
     {
         private readonly IProjectionExpressionResolver _resolver;
         private readonly ExpressionArgumentReplacer _expressionArgumentReplacer = new();
-        private static readonly Dictionary<MemberInfo, LambdaExpression?> ProjectableMemberCache = new();
+        private static readonly ConcurrentDictionary<MemberInfo, LambdaExpression?> ProjectableMemberCache = new();
         private IQueryProvider? _currentQueryProvider;
         private bool _disableRootRewrite = false;
         private readonly bool _trackingByDefault;
@@ -59,7 +60,7 @@ namespace EntityFrameworkCore.Projectables.Services
                     ? _resolver.FindGeneratedExpression(memberInfo)
                     : null;
 
-                ProjectableMemberCache.Add(memberInfo, reflectedExpression);
+                ProjectableMemberCache.TryAdd(memberInfo, reflectedExpression);
             }
 
             return reflectedExpression is not null;
